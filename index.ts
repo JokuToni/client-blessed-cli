@@ -37,7 +37,7 @@ export const boxOptions =  {
 }
 
 
-const screen = blessed.screen({
+export const screen = blessed.screen({
   smartCSR: true,
   dockBorders: true,
 });

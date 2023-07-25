@@ -1,5 +1,5 @@
 import * as blessed from 'blessed'
-import { boxOptions } from '.';
+import { boxOptions, screen } from '.';
 
 const BOX_NAME = "main";
 const mainBox = blessed.box(boxOptions[BOX_NAME] as blessed.Widgets.BoxOptions);
@@ -8,7 +8,7 @@ const prompter = blessed.prompt({
     bottom: 0,
     padding: 0,
     width: "98%",
-    height: "15%",
+    height: "shrink",
     dockBorders: true,
     left: 0,
     tags: true,
@@ -20,7 +20,8 @@ const messageBox = blessed.message({
     parent: mainBox,
     top: 0,
     left: 0,
-    height: "85%",
+    height: "90%",
+    flex: true,
     dockBorders:true,
     width: "98%",
     style: {
@@ -43,7 +44,6 @@ mainBox.on('click', function(data) {
     mainBox.setContent('{center}Some different {red-fg}content{/red-fg}.{/center}');
     mainBox.screen.render();
 });
-  
 
 mainBox.key('enter', function(ch, key) {
     mainBox.setContent('{right}Even different {black-fg}content{/black-fg}.{/right}\n');
@@ -57,6 +57,7 @@ mainBox.key('enter', function(ch, key) {
 });
 
 
+
 const mainLoop = async () => {
     mainBox.setContent('{right}Even different {black-fg}content{/black-fg}.{/right}\n');
     messageBox.setLine(1, 'Welcome to alphamadness client!');
@@ -65,7 +66,7 @@ const mainLoop = async () => {
     prompter.input("Tell me your name", "", (err, val) => {
         messageBox.insertLine(1, "Pass");
     })
-    mainBox.screen.render();
+   screen.render();
 }
 
 export default mainBox;
