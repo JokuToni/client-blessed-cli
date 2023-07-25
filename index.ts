@@ -23,27 +23,31 @@ export const boxOptions =  {
         right: 0,
     }),
     "logs": Object.assign({}, mainBoxOptions, {
-        height: "70%",
+        height: "75%",
         width: "40%",
         left: 0,
-        top: 0
+        bottom: 0
     }),
     "stats": Object.assign({}, mainBoxOptions, {
         height: "30%",
         width: "40%",
         left: 0,
-        bottom: 0
+        top: 0
     }), 
 }
+
+
+const screen = blessed.screen({
+  smartCSR: true,
+  dockBorders: true,
+});
+
+// Screen needs to initialized before can add boxes
 
 import statsBox from './boxStats'
 import mainBox from './boxMain'
 import logsBox from './boxLogs'
 
-
-const screen = blessed.screen({
-  smartCSR: true
-});
 
 screen.title = 'alp';
 
