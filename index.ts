@@ -4,6 +4,15 @@ interface boxOptions {
 }
 
 
+interface globalState {
+  promptStarted: boolean,
+}
+
+export const globalState: globalState = {
+  promptStarted: false
+}
+
+
 const mainBoxOptions = {
     tags: true,
     border: { type: 'line' },

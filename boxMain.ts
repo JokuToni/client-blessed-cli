@@ -1,16 +1,20 @@
 import * as blessed from 'blessed'
-import { boxOptions, screen } from '.';
+import { boxOptions, screen, globalState } from '.';
 
 const BOX_NAME = "main";
 const mainBox = blessed.box(boxOptions[BOX_NAME] as blessed.Widgets.BoxOptions);
-const prompter = blessed.prompt({
+mainBox.setContent('{center}Some different {red-fg}content{/red-fg}.{/center}');
+
+
+const inputBox = blessed.textbox({
     parent: mainBox,
     bottom: 0,
-    padding: 0,
     width: "98%",
-    height: "shrink",
+    input: true,
+    height: "20%",
     dockBorders: true,
     left: 0,
+    border: "line",
     tags: true,
     keys: true,
     vi: true
@@ -18,10 +22,11 @@ const prompter = blessed.prompt({
 
 const messageBox = blessed.message({
     parent: mainBox,
+    hidden: true,
     top: 0,
     left: 0,
-    height: "90%",
-    flex: true,
+    input: true,
+    height: "80%",
     dockBorders:true,
     width: "98%",
     style: {
@@ -32,41 +37,45 @@ const messageBox = blessed.message({
 })
 
 const line = blessed.line({
-    parent: prompter,
+    parent: inputBox,
     orientation: "horizontal",
     top: 0
 })
 
-
-
-
 mainBox.on('click', function(data) {
+    if (globalState.promptStarted == true) return;
     mainBox.setContent('{center}Some different {red-fg}content{/red-fg}.{/center}');
     mainBox.screen.render();
 });
 
-mainBox.key('enter', function(ch, key) {
+mainBox.key('g', function(ch, key) {
+    if (globalState.promptStarted!) globalState.promptStarted = true;
+
+    messageBox.hidden = false;
+    messageBox.setLine(1, 'Welcome to alphamadness client!');
+    messageBox.insertLine(2, 'Please choose what to do next (1-6):');
+
     mainBox.setContent('{right}Even different {black-fg}content{/black-fg}.{/right}\n');
     mainBox.setLine(1, 'bar');
     mainBox.insertLine(1, 'foo');
 
-    prompter.input("Tell me your name", "", (err, val) => {
-        mainBox.insertLine(1, "Pass");
+    inputBox.input((err, val) => {
+
+        messageBox.insertLine(2, val);
     })
+
+
+
     mainBox.screen.render();
 });
 
-
-
 const mainLoop = async () => {
-    mainBox.setContent('{right}Even different {black-fg}content{/black-fg}.{/right}\n');
-    messageBox.setLine(1, 'Welcome to alphamadness client!');
-    messageBox.insertLine(2, 'Please choose what to do next (1-6):');
 
-    prompter.input("Tell me your name", "", (err, val) => {
-        messageBox.insertLine(1, "Pass");
-    })
-   screen.render();
+    mainBox.setContent('{right}Press "g" to start the {black-fg}program{/black-fg}.{/right}\n');
+    while (true) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        mainBox.screen.render();
+    }
 }
 
 export default mainBox;
