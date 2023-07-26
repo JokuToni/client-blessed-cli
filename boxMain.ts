@@ -1,5 +1,6 @@
 import * as blessed from 'blessed'
 import { boxOptions, screen, globalState } from '.';
+import { forEachChild } from 'typescript';
 
 const BOX_NAME = "main";
 const mainBox = blessed.box(boxOptions[BOX_NAME] as blessed.Widgets.BoxOptions);
@@ -69,7 +70,7 @@ const connectToServer = async () => {
 
 const logInScript = async () => {
     return new Promise(async (resolve, reject) => {
-        addLine('Welcome to alphamadness client!');
+        addLine("")
         addLine("Please enter your password: ")
         const inputCallBack = async (err, val) => {
             const loader = blessed.loading({
@@ -94,6 +95,28 @@ const logInScript = async () => {
     })
 }
 
+const addSelection = (startLine: number, selection: {text: string, value: string}[]) => {
+    return new Promise(async (resolve, reject) => {
+        editLine(startLine, `Please select your action (1-${selection.length}): `);
+        editLine(startLine + 1, "");
+
+        const endLine = currentLine + 2 + selection.length
+        for (let i = 0; i < selection.length; i++) {
+            editLine(startLine + i + 2,  `(${i + 1}): ${selection[i].text}`)
+        }
+
+        const inputCallBack = async (err, val) => {
+            if (typeof val == "number" && val <= selection.length) resolve(selection[val].value + 1)
+            for (let i = 0; i < endLine - startLine; i++) {
+                messageBox.clearLine(i + startLine)
+            }
+            resolve(await addSelection(startLine, selection))
+        }
+
+        inputBox.input(inputCallBack)
+    })
+}
+
 
 const mainControlScript = async () => {
     currentLine = 1;
@@ -103,23 +126,13 @@ const mainControlScript = async () => {
     editLine(topLine, `{left}Connected as: {blue-fg} ${globalState.userData.userId}{/blue-fg}.{/left}`)
     addLine("")
 
-    addLine("Please select your action (1-6): ")
-    const loader = blessed.loading({
-        parent: messageBox,
-        top: currentLine + 1,
-        height: "shrink",
-        width: "shrink",
-        keys:true,
-    })
-    loader.load("Waiting for input...")
-
-    const inputCallBack = async (err, val) => {
-        loader.stop()
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    inputBox.input(inputCallBack)
-
+    await addSelection(currentLine, [
+        {text:"sdsd", value:"1"},
+        {text:"sdaaad", value:"2"},
+        {text:"sdsd555", value:"3"},
+        {text:"sdsdfafafa", value:"4"},
+        {text:"ggdgdgdgdf", value:"5"}
+    ])
 }
 
 
@@ -139,12 +152,13 @@ mainBox.key('g', async function(ch, key) {
 
 
 const mainLoop = async () => {
-
     mainBox.setContent('{right}Press "g" to start the {black-fg}program{/black-fg}.{/right}\n');
     while (true) {
         await new Promise(resolve => setTimeout(resolve, 50));
         mainBox.screen.render();
     }
+
+
 }
 
 export default mainBox;
