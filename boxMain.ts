@@ -14,10 +14,13 @@ const inputBox = blessed.textbox({
     height: "20%",
     dockBorders: true,
     left: 0,
-    border: "line",
     tags: true,
     keys: true,
-    vi: true
+    vi: true,
+    style: {
+        fg: 'white',
+        border: { fg: '#f0f0f0' },
+      }
 })
 
 const messageBox = blessed.message({
@@ -106,11 +109,13 @@ const addSelection = (startLine: number, selection: {text: string, value: string
         }
 
         const inputCallBack = async (err, val) => {
-            if (typeof val == "number" && val <= selection.length) resolve(selection[val].value + 1)
+            console.log(Number(val), selection.length)
             for (let i = 0; i < endLine - startLine; i++) {
                 messageBox.clearLine(i + startLine)
             }
-            resolve(await addSelection(startLine, selection))
+            
+
+            resolve(selection[Number(val)].value + 1)
         }
 
         inputBox.input(inputCallBack)
@@ -154,7 +159,7 @@ mainBox.key('g', async function(ch, key) {
 const mainLoop = async () => {
     mainBox.setContent('{right}Press "g" to start the {black-fg}program{/black-fg}.{/right}\n');
     while (true) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 150));
         mainBox.screen.render();
     }
 
