@@ -10,7 +10,6 @@ const inputBox = blessed.textbox({
     parent: mainBox,
     bottom: 0,
     width: "98%",
-    input: true,
     height: "20%",
     dockBorders: true,
     left: 0,
@@ -31,7 +30,6 @@ const messageBox = blessed.message({
     width: "98%",
     style: {
         fg: 'white',
-        bg: 'green',
         border: { fg: '#f0f0f0' },
       }
 })
@@ -48,26 +46,97 @@ mainBox.on('click', function(data) {
     mainBox.screen.render();
 });
 
-mainBox.key('g', function(ch, key) {
-    if (globalState.promptStarted!) globalState.promptStarted = true;
+let currentLine = 0;
 
-    messageBox.hidden = false;
-    messageBox.setLine(1, 'Welcome to alphamadness client!');
-    messageBox.insertLine(2, 'Please choose what to do next (1-6):');
+const addLine = (text:string) => {
+    messageBox.setLine(currentLine + 1, text)
+    currentLine += 1
+}
+const editLine = (index, text:string) => {
+    messageBox.setLine(index, text)
+}
 
-    mainBox.setContent('{right}Even different {black-fg}content{/black-fg}.{/right}\n');
-    mainBox.setLine(1, 'bar');
-    mainBox.insertLine(1, 'foo');
+const connectToServer = async () => {
+    for (let i = 0; i < 5; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 
-    inputBox.input((err, val) => {
+    globalState.loggedIn = true
+    globalState.userData = {
+        userId: "345ad-5456fg-4da552-4059fj"
+    }
+}
 
-        messageBox.insertLine(2, val);
+const logInScript = async () => {
+    return new Promise(async (resolve, reject) => {
+        addLine('Welcome to alphamadness client!');
+        addLine("Please enter your password: ")
+        const inputCallBack = async (err, val) => {
+            const loader = blessed.loading({
+                parent: messageBox,
+                top: currentLine,
+                height: "shrink",
+                width: "shrink"
+            })
+            loader.load("Connecting to server...")
+            await connectToServer()
+            loader.stop()
+            editLine(currentLine, "Connected succesfully!")
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            currentLine = 0;
+            messageBox.content = "";
+
+            resolve(true)
+        }
+
+        inputBox.input(inputCallBack)
     })
+}
 
+
+const mainControlScript = async () => {
+    currentLine = 1;
+    messageBox.content="";
+
+    const topLine = 0;
+    editLine(topLine, `{left}Connected as: {blue-fg} ${globalState.userData.userId}{/blue-fg}.{/left}`)
+    addLine("")
+
+    addLine("Please select your action (1-6): ")
+    const loader = blessed.loading({
+        parent: messageBox,
+        top: currentLine + 1,
+        height: "shrink",
+        width: "shrink",
+        keys:true,
+    })
+    loader.load("Waiting for input...")
+
+    const inputCallBack = async (err, val) => {
+        loader.stop()
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    inputBox.input(inputCallBack)
+
+}
+
+
+mainBox.key('g', async function(ch, key) {
+    if (globalState.promptStarted) return;
+    if (globalState.promptStarted == false) globalState.promptStarted = true;
+    messageBox.hidden = false;
+
+    if (globalState.loggedIn == false) await logInScript()
+    if (globalState.loggedIn == true) await mainControlScript()
 
 
     mainBox.screen.render();
 });
+
+
+
 
 const mainLoop = async () => {
 

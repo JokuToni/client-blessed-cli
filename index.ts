@@ -3,16 +3,23 @@ interface boxOptions {
     [key:string]: blessed.Widgets.BoxOptions
 }
 
+interface userData {
+  userId: string
+}
 
 interface globalState {
   promptStarted: boolean,
+  loggedIn: boolean,
+
+
+  userData: userData | undefined
 }
 
 export const globalState: globalState = {
-  promptStarted: false
+  promptStarted: false,
+  loggedIn: false,
+  userData: undefined
 }
-
-
 const mainBoxOptions = {
     tags: true,
     border: { type: 'line' },
