@@ -14,6 +14,7 @@ const inputBox = blessed.textbox({
     height: "20%",
     dockBorders: true,
     left: 0,
+    mouse: false,
     tags: true,
     keys: true,
     vi: true,
@@ -98,8 +99,30 @@ const logInScript = async () => {
     })
 }
 
+const simpleInputQuestion = (startLine: number, text:string,question: string) => {
+    return new Promise(async (resolve, reject) => {
+        inputBox.clearValue()
+        editLine(startLine, `${text}`)
+        editLine(startLine + 1, `${question}`);
+        editLine(startLine + 2, "");
+
+        const inputCallBack = async (err, val) => {            
+            editLine(startLine + 3, `Selected: (${val})`)
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            for (let i = 0; i < (startLine + 4); i++) {
+                messageBox.clearLine(i + startLine)
+            }
+            resolve(val)
+        }
+
+        inputBox.input(inputCallBack)
+    })
+
+}
+
 const addSelection = (startLine: number, selection: {text: string, value: string}[]) => {
     return new Promise(async (resolve, reject) => {
+        inputBox.clearValue()
         editLine(startLine, `Please select your action (1-${selection.length}): `);
         editLine(startLine + 1, "");
 
@@ -108,19 +131,39 @@ const addSelection = (startLine: number, selection: {text: string, value: string
             editLine(startLine + i + 2,  `(${i + 1}): ${selection[i].text}`)
         }
 
-        const inputCallBack = async (err, val) => {
-            console.log(Number(val), selection.length)
-            for (let i = 0; i < endLine - startLine; i++) {
+        const inputCallBack = async (err, val) => {            
+            editLine(endLine +1, `Selected: (${val})`)
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            for (let i = 0; i < (endLine+1) - startLine + 1; i++) {
                 messageBox.clearLine(i + startLine)
             }
-            
 
-            resolve(selection[Number(val)].value + 1)
+            resolve(selection[Number(val) - 1].value)
         }
 
         inputBox.input(inputCallBack)
     })
 }
+
+
+
+const createAccountsScript = async (startLine: number) => {
+
+    const numberOfProxies = 8
+    const questionText = `Currently {red-fg}${numberOfProxies}{/red-fg} proxies available. \n {gray-fg}Be aware that some proxies might be in use. So if your input number exceeds the amount of proxies that are not in use, you will only start  number of processes {/gray-fg}`
+
+    const numberOfProcesses = await simpleInputQuestion(startLine, questionText, `Please input a number between (1-${numberOfProxies}):`)
+    
+    const windowVisible = await addSelection(startLine, [
+        {text:"Create accounts", value:"1"},
+        {text:"Wager accounts", value:"2"},
+        {text:"Exit.", value:"3"},
+    ])
+}
+
+const wagerAccountsScript = async (startLine: number) => {
+}
+
 
 
 const mainControlScript = async () => {
@@ -131,13 +174,19 @@ const mainControlScript = async () => {
     editLine(topLine, `{left}Connected as: {blue-fg} ${globalState.userData.userId}{/blue-fg}.{/left}`)
     addLine("")
 
-    await addSelection(currentLine, [
-        {text:"sdsd", value:"1"},
-        {text:"sdaaad", value:"2"},
-        {text:"sdsd555", value:"3"},
-        {text:"sdsdfafafa", value:"4"},
-        {text:"ggdgdgdgdf", value:"5"}
+    const option = await addSelection(currentLine, [
+        {text:"Create accounts", value:"1"},
+        {text:"Wager accounts", value:"2"},
+        {text:"Exit.", value:"3"},
     ])
+
+
+    switch (option) {
+        case "1": await createAccountsScript(currentLine)
+        case "2": await wagerAccountsScript(currentLine)
+        case "3": await createAccountsScript(currentLine)
+
+    }
 }
 
 
