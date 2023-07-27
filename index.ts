@@ -79,3 +79,14 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
 });
 
 screen.render();
+
+
+const mainLoop = async () => {
+  mainBox.setContent('{right}Press "g" to start the {black-fg}program{/black-fg}.{/right}\n');
+  while (true) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      screen.render();
+  }
+}
+
+mainLoop()

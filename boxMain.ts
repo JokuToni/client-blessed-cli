@@ -83,15 +83,14 @@ const logInScript = async () => {
                 height: "shrink",
                 width: "shrink"
             })
+
             loader.load("Connecting to server...")
             await connectToServer()
             loader.stop()
             editLine(currentLine, "Connected succesfully!")
             await new Promise(resolve => setTimeout(resolve, 1000));
-
             currentLine = 0;
             messageBox.content = "";
-
             resolve(true)
         }
 
@@ -202,17 +201,8 @@ mainBox.key('g', async function(ch, key) {
     mainBox.screen.render();
 });
 
-
-
-
 const mainLoop = async () => {
     mainBox.setContent('{right}Press "g" to start the {black-fg}program{/black-fg}.{/right}\n');
-    while (true) {
-        await new Promise(resolve => setTimeout(resolve, 150));
-        mainBox.screen.render();
-    }
-
-
 }
 
 export default mainBox;
