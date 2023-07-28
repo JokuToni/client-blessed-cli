@@ -39,12 +39,6 @@ const messageBox = blessed.message({
       }
 })
 
-const line = blessed.line({
-    parent: inputBox,
-    orientation: "horizontal",
-    top: 0
-})
-
 mainBox.on('click', function(data) {
     if (globalState.promptStarted == true) return;
     mainBox.setContent('{center}Some different {red-fg}content{/red-fg}.{/center}');
@@ -184,10 +178,13 @@ const mainControlScript = async () => {
         case "1": await createAccountsScript(currentLine)
         case "2": await wagerAccountsScript(currentLine)
         case "3": await createAccountsScript(currentLine)
-
     }
 }
 
+
+mainBox.on("click", async function(mouse) {
+    mainBox.focus()
+})
 
 mainBox.key('g', async function(ch, key) {
     if (globalState.promptStarted) return;

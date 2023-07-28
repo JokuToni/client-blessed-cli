@@ -42,7 +42,6 @@ const displayLogs = async () => {
             }
         })
 
-
         logText.setLine(0, `[{red-fg}${getCurrentTime()}{/red-fg}]: Hello everybody !! ${i}`)
         logsPanel.insertItem(0, logText)
         logsPanel.down(1)
@@ -52,6 +51,11 @@ const displayLogs = async () => {
 logsPanel.on("click", async function(mouse) {
     logsPanel.focus()
 })
+
+
+logsPanel.key('r', async function(ch, key) {
+    logsPanel.select(0)
+});
 
 logsPanel.key('w', async function(ch, key) {
     logsPanel.up(1)
