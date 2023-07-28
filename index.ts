@@ -24,11 +24,7 @@ const mainBoxOptions = {
     tags: true,
     border: { type: 'line' },
     dockBorders:true,
-    style: {
-      fg: 'white',
-      bg: 'black',
-      border: { fg: '#f0f0f0' },
-    }
+
 }
 
 
