@@ -77,6 +77,95 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
 screen.render();
 
 
+export const simpleInputQuestion = (blessedElement: blessed.Widgets.MessageElement, inputElement: blessed.Widgets.TextboxElement, startLine: number, text:string,question: string) => {
+  return new Promise(async (resolve, reject) => {
+      inputElement.clearValue()
+
+      blessedElement.setLine(startLine, `${text}`)
+      blessedElement.setLine(startLine + 1, `${question}`);
+      blessedElement.setLine(startLine + 2, "");
+
+      const inputCallBack = async (err, val) => {            
+          blessedElement.setLine(startLine + 3, `Selected: (${val})`)
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          for (let i = 0; i < (startLine + 4); i++) {
+              blessedElement.clearLine(i + startLine)
+          }
+          resolve(val)
+      }
+
+      inputElement.input(inputCallBack)
+  })
+}
+
+
+export const questionWithWaiter = (blessedElement: blessed.Widgets.MessageElement, inputElement: blessed.Widgets.TextboxElement, startLine: number, text:string,question: string, waitingMessage: string, callback: (inputValue: string) => Promise<[boolean, string]>) => {
+  return new Promise(async (resolve, reject) => {
+      inputElement.clearValue()
+      
+      blessedElement.setLine(startLine, `${text}`)
+      blessedElement.setLine(startLine + 1, `${question}`);
+      blessedElement.setLine(startLine + 2, "");
+      
+      const inputCallBack = async (err, val: string | null) => {            
+        const loader = blessed.loading({
+          parent: blessedElement,
+          top: startLine + 3,
+          height: "shrink",
+          width: "shrink"
+        })
+        "Connecting to server..."
+        loader.load(waitingMessage)
+        const result = await callback(val)
+        loader.stop()
+        blessedElement.setLine(startLine + 3, result[1])
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        for (let i = 0; i < (startLine + 4); i++) {
+          blessedElement.clearLine(i + startLine)
+        }
+        resolve(result[0])  
+      }
+      
+      inputElement.input(inputCallBack)
+  })
+}
+
+
+export const addSelection = (blessedElement: blessed.Widgets.MessageElement, inputElement: blessed.Widgets.TextboxElement,  startLine: number, selection: {text: string, value: string}[]) => {
+  return new Promise(async (resolve, reject) => {
+      let currentLine = 0;
+      inputElement.clearValue()
+      blessedElement.setLine(startLine, `Please select your action (1-${selection.length}): `)
+      currentLine += 1;
+      blessedElement.setLine(startLine + 1, "")
+      currentLine += 1;
+
+      const endLine = currentLine + 2 + selection.length
+      for (let i = 0; i < selection.length; i++) {
+          blessedElement.setLine(startLine + i + 2,  `(${i + 1}): ${selection[i].text}`)
+          currentLine += 1;
+      }
+
+      const inputCallBack = async (err, val) => {            
+          blessedElement.setLine(endLine +1, `Selected: (${val})`)
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          for (let i = 0; i < (endLine+1) - startLine + 1; i++) {
+              blessedElement.clearLine(i + startLine)
+          }
+
+          resolve(selection[Number(val) - 1].value)
+      }
+
+      inputElement.input(inputCallBack)
+  })
+}
+
+
+
+
+
+
 const mainLoop = async () => {
   mainBox.setContent('{right}Press "g" to start the {black-fg}program{/black-fg}.{/right}\n');
   while (true) {
