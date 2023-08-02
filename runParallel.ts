@@ -1,5 +1,5 @@
-import { Pool, Task, ThreadPool } from 'threads';
-
+import { spawn, Pool, Worker } from "threads"
+import * as blessed from 'blessed'
 
 interface SharedState {
   [url: string]: string | null;
@@ -9,64 +9,29 @@ interface SharedState {
 export type puppeteerOptions = {
   windowVisible: boolean,
   taskId: string,
+
+
+
+
+
+  LogsBox: 
+
+
+
 } 
 
-type webCrawler = (option: puppeteerOptions) => Promise<true | false>;
-
+type webCrawler = (option: puppeteerOptions) => null
 
 export const runThreads = async (instanceCount: number, options: puppeteerOptions, webCrawler: webCrawler, ) => {
   try {
-    const threadPool = new ThreadPool({ size: instanceCount });
-    const tasks: Task = []  
+    const pool = Pool(() => spawn(new Worker("./workers/multiplier")), instanceCount)
+    
     for (let i = 0; i < instanceCount; i++) {
-      tasks.push(new Task(webCrawler(options)))
+      pool.queue(webCrawler(options))
     }
-    const results = await threadPool.run(tasks);
 
-    results.forEach((result) => {
-      // Do something with the results if needed
-    });
-
-    threadPool.terminate();
+    return pool.terminate;
   } catch (error) {
     console.error('Error:', error);
   }
-
-
 }
-
-
-
-const sharedState: SharedState = {};
-
-const fetchAndStoreTitle = async (url: string) => {
-  try {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-    const title = await page.title();
-    sharedState[url] = title;
-    await page.close();
-    await browser.close();
-  } catch (error) {
-    console.error(`Error crawling ${url}:`, error);
-    sharedState[url] = null;
-  }
-};
-
-(async () => {
-  try {
-    const threadPool = new ThreadPool({ size: numThreads });
-
-    const tasks = urlsToCrawl.map((url) => new Task(fetchAndStoreTitle, url));
-    const results = await threadPool.run(tasks);
-
-    results.forEach((result) => {
-      // Do something with the results if needed
-    });
-
-    threadPool.terminate();
-  } catch (error) {
-    console.error('Error:', error);
-  }
-})();

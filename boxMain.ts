@@ -7,17 +7,11 @@ import { forEachChild } from 'typescript';
 import {inputBox, mainBox, messageBox} from './elements/mainboxElements'
 
 
-
-
-
-
 mainBox.on('click', function(data) {
     if (globalState.promptStarted == true) return;
     mainBox.setContent('{center}Some different {red-fg}content{/red-fg}.{/center}');
     mainBox.screen.render();
 });
-
-
 
 
 const connectToServer = async (password: string): Promise<[boolean, string]> => {
