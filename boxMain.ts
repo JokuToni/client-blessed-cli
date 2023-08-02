@@ -1,6 +1,6 @@
 import * as blessed from 'blessed'
 
-import { boxOptions, screen, globalState, simpleInputQuestion, addSelection } from '.';
+import { boxOptions, screen, globalState, questionWithWaiter, simpleInputQuestion, addSelection } from '.';
 import { forEachChild } from 'typescript';
 
 
@@ -20,7 +20,7 @@ mainBox.on('click', function(data) {
 
 
 
-const connectToServer = async () => {
+const connectToServer = async (password: string): Promise<[boolean, string]> => {
     for (let i = 0; i < 5; i++) {
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -29,37 +29,16 @@ const connectToServer = async () => {
     globalState.userData = {
         userId: "345ad-5456fg-4da552-4059fj"
     }
+
+    return [true, "Connected Successfully"]
 }
 
 const logInScript = async (startLine: number) => {
     return new Promise(async (resolve, reject) => {
-
         let currentLine = 0;
-
-        const numberOfProcesses = await simpleInputQuestion(messageBox, inputBox, startLine, questionText, `Please input a number between (1-${numberOfProxies}):`)
         messageBox.setLine(currentLine, ""); currentLine += 1;
-        messageBox.setLine(currentLine, "Please enter your password: "); currentLine += 1;
-        
-        const connected = await simpleInputQuestion(messageBox, inputBox, startLine, questionText, `Please input a number between (1-${numberOfProxies}):`)
-
-        const inputCallBack = async (err, val) => {
-            const loader = blessed.loading({
-                parent: messageBox,
-                top: currentLine,
-                height: "shrink",
-                width: "shrink"
-            })
-
-            loader.load("Connecting to server...")
-            await connectToServer()
-            loader.stop()
-            messageBox(currentLine, "Connected succesfully!")
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            currentLine = 0;
-            messageBox.content = "";
-            resolve(true)
-        }
-        inputBox.input(inputCallBack)
+        const connect = await questionWithWaiter(messageBox, inputBox, currentLine, "Please enter your password: ", "", "Connecting to server...", connectToServer )  
+        resolve(connect[0]) 
     })
 }
 
@@ -82,24 +61,21 @@ const wagerAccountsScript = async (startLine: number) => {
 const mainControlScript = async (startLine: number) => {
     const currentLine = startLine;
     messageBox.content="";
-
     const topLine = 0;
 
+    messageBox.setLine(topLine, `{left}Connected as: {blue-fg} ${globalState.userData.userId}{/blue-fg}.{/left}`)
+    messageBox.setLine(topLine + 1, ``)
 
-
-    messageBox.(topLine, `{left}Connected as: {blue-fg} ${globalState.userData.userId}{/blue-fg}.{/left}`)
-    addLine("")
-
-    const option = await addSelection(messageBox, inputBox, currentLine, [
+    const option = await addSelection(messageBox, inputBox, topLine + 2, [
         {text:"Create accounts", value:"1"},
         {text:"Wager accounts", value:"2"},
         {text:"Exit.", value:"3"},
     ])
 
     switch (option) {
-        case "1": await createAccountsScript(currentLine)
-        case "2": await wagerAccountsScript(currentLine)
-        case "3": await createAccountsScript(currentLine)
+        case "1": await createAccountsScript(topLine + 2)
+        case "2": await wagerAccountsScript(topLine + 2)
+        case "3": await createAccountsScript(topLine + 2)
     }
 }
 
@@ -119,7 +95,7 @@ mainBox.key('g', async function(ch, key) {
     messageBox.hidden = false;
     let currentLine = 0;
     if (globalState.loggedIn == false) await logInScript(currentLine)
-    if (globalState.loggedIn == true) await mainControlScript()
+    if (globalState.loggedIn == true) await mainControlScript(currentLine)
     mainBox.screen.render();
 });
 

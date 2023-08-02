@@ -114,7 +114,6 @@ export const questionWithWaiter = (blessedElement: blessed.Widgets.MessageElemen
           height: "shrink",
           width: "shrink"
         })
-        "Connecting to server..."
         loader.load(waitingMessage)
         const result = await callback(val)
         loader.stop()
